@@ -33,7 +33,7 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{text-align:left;p
 <div id="v32Login"><div class="loginbox"><img src="trophy_house_logo.png"><h2>Trophy House</h2><div class="muted" style="text-align:center;margin-bottom:18px">Secure Login • V32</div><label>Username<input id="v32User" autocomplete="username" placeholder="Username"></label><label>Password<input id="v32Pass" type="password" autocomplete="current-password" placeholder="Password" onkeydown="if(event.key==='Enter')v32DoLogin()"></label><button class="primary" style="width:100%;margin-top:10px" onclick="v32DoLogin()">Login</button><div id="v32LoginMsg" class="muted" style="margin-top:10px;text-align:center"></div><div class="muted" style="margin-top:16px;font-size:12px">Default Admin: admin / admin123</div></div></div>
 
 <aside class="sidebar">
-<div class="brand"><img src="trophy_house_logo.png"><div><b>TROPHY HOUSE</b><small>Inventory</small></div></div>
+<div class="brand"><img src="trophy_house_logo.png"><div><b>TROPHY HOUSE</b><small>Inventory V35</small></div></div>
 <nav>
 <button class="active" onclick="go('dashboard',this)">⌂ <span>Dashboard</span></button>
 <button onclick="go('items',this)">▣ <span>Item Master</span></button>
@@ -63,7 +63,7 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{text-align:left;p
 </aside>
 <main>
 <section id="dashboard" class="view active">
-<div class="top"><div><h1>Trophy House</h1><div class="muted">Real Stock Management</div></div><div><button class="btn light" onclick="exportData()">Backup Data</button> <span class="muted">Live local database</span></div></div>
+<div class="top"><div><h1>Trophy House</h1><div class="muted">Real Stock Management — V35</div></div><div><button class="btn light" onclick="exportData()">Backup Data</button> <span class="muted">Live local database</span></div></div>
 <div class="cards">
 <div class="card"><div class="label">Total Items</div><div class="num" id="totalItems">0</div></div>
 <div class="card"><div class="label">Total Stock</div><div class="num" id="totalStock">0</div></div>
@@ -1651,6 +1651,63 @@ window.TH37=(function(){
 </script>
 
 <style>
+#th38Panel{position:fixed;right:14px;bottom:58px;z-index:99998;background:#fff;border:1px solid #ddd;border-radius:14px;padding:12px;box-shadow:0 8px 30px rgba(0,0,0,.15);max-width:310px;font:14px system-ui}
+#th38Panel button{margin:4px 3px 0 0;padding:8px 10px;border:1px solid #ccc;border-radius:8px;background:#fff;cursor:pointer}
+#th38Status{margin-top:8px;font-size:12px;line-height:1.4}
+</style>
+<div id="th38Panel">
+  <b>Trophy House • V38 Stable</b>
+  <div>
+    <button onclick="TH38.backup()">Backup</button>
+    <button onclick="TH38.health()">Health Check</button>
+    <button onclick="document.getElementById('th38Restore').click()">Restore</button>
+    <input id="th38Restore" type="file" accept=".json,application/json" style="display:none" onchange="TH38.restore(this.files[0])">
+  </div>
+  <div id="th38Status">Ready</div>
+</div>
+<script>
+window.TH38=(function(){
+  function read(){try{return JSON.parse(localStorage.getItem("th_v2_data")||"{}")}catch(e){return null}}
+  function status(t){var e=document.getElementById("th38Status");if(e)e.textContent=t}
+  function backup(){
+    var raw=localStorage.getItem("th_v2_data");
+    if(!raw){status("No app data found.");return}
+    var payload={app:"Trophy House Inventory",version:"V38",exportedAt:new Date().toISOString(),data:JSON.parse(raw)};
+    var blob=new Blob([JSON.stringify(payload,null,2)],{type:"application/json"});
+    var a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="Trophy_House_Backup_"+new Date().toISOString().slice(0,10)+".json";a.click();
+    setTimeout(function(){URL.revokeObjectURL(a.href)},1000);status("Backup created.");
+  }
+  function restore(file){
+    if(!file)return;
+    var r=new FileReader();
+    r.onload=function(){
+      try{
+        var p=JSON.parse(r.result), d=p.data||p;
+        if(!d || typeof d!=="object" || !Array.isArray(d.items)) throw new Error("Invalid backup");
+        if(!confirm("Restore this backup? Current browser data will be replaced.")) return;
+        localStorage.setItem("th_v2_data",JSON.stringify(d));
+        status("Restore complete. Reloading…"); setTimeout(function(){location.reload()},500);
+      }catch(e){status("Restore failed: invalid backup.");}
+    };
+    r.readAsText(file);
+  }
+  function health(){
+    var d=read(), issues=[];
+    if(!d){issues.push("data unreadable");}
+    else{
+      [["items","Items"],["parties","Parties"],["invoices","Invoices"],["purchases","Purchases"],["orders","Orders"],["workOrders","Work Orders"],["workers","Workers"]].forEach(function(x){
+        if(!Array.isArray(d[x[0]]))issues.push(x[1]+" missing");
+      });
+      if(Array.isArray(d.items)) d.items.forEach(function(i){if(Number(i.stock)<0)issues.push("negative stock: "+(i.name||i.code||"item"))});
+      if(Array.isArray(d.invoices)){var seen={};d.invoices.forEach(function(i){var n=i.invoiceNo||i.no;if(n){if(seen[n])issues.push("duplicate invoice: "+n);seen[n]=1}})}
+    }
+    status(issues.length ? "Issues: "+issues.slice(0,3).join("; ") : "Health check passed.");
+  }
+  return {backup:backup,restore:restore,health:health};
+})();
+</script>
+
+<style>
 #th39Toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);z-index:110000;background:#222;color:#fff;padding:10px 15px;border-radius:9px;display:none;font:14px system-ui}
 </style>
 <div id="th39Toast"></div>
@@ -1718,33 +1775,6 @@ window.TH37=(function(){
     var b=document.getElementById("th40Box");
     b.style.display=b.style.display==="block"?"none":"block"; render();
   };
-})();
-</script>
-
-<!-- Trophy House clean login guard -->
-<script>
-(function(){
-  function ready(){
-    var box=document.getElementById('v32Login');
-    if(!box) return;
-    var has=false;
-    try{has=!!localStorage.getItem('th_v32_session')}catch(e){}
-    if(!has){box.classList.remove('v32-hidden');box.style.setProperty('display','flex','important');box.style.setProperty('visibility','visible','important');box.style.setProperty('opacity','1','important');}
-    var btn=box.querySelector('button');
-    if(btn && !btn.__cleanBound){
-      btn.__cleanBound=true;
-      btn.addEventListener('click',function(){
-        var u=(document.getElementById('v32User')||{}).value||'';
-        var p=(document.getElementById('v32Pass')||{}).value||'';
-        if(u.trim()==='admin' && p==='admin123'){
-          try{localStorage.setItem('th_v32_session',JSON.stringify({u:'admin',n:'Administrator',r:'Admin'}));}catch(e){}
-          box.classList.add('v32-hidden'); box.style.removeProperty('display');
-        }
-      },true);
-    }
-  }
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',ready);else ready();
-  setTimeout(ready,100);setTimeout(ready,500);setTimeout(ready,1500);
 })();
 </script>
 </body></html>`);w.document.close();
