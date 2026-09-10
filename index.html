@@ -1777,6 +1777,30 @@ window.TH38=(function(){
   };
 })();
 </script>
+
+<style id="thEmergencyLoginStyle">
+#thEmergencyLogin{position:fixed!important;inset:0!important;z-index:2147483647!important;background:#0f172a!important;display:flex!important;align-items:center!important;justify-content:center!important;padding:20px!important;box-sizing:border-box!important}
+#thEmergencyLogin .card{display:block!important;visibility:visible!important;opacity:1!important;width:min(420px,100%)!important;background:#fff!important;color:#111827!important;border-radius:18px!important;padding:28px!important;box-sizing:border-box!important;box-shadow:0 20px 70px rgba(0,0,0,.45)!important;font-family:Arial,sans-serif!important}
+#thEmergencyLogin img{display:block!important;width:auto!important;max-width:170px!important;max-height:75px!important;margin:0 auto 14px!important}
+#thEmergencyLogin h2{display:block!important;color:#111827!important;text-align:center!important;margin:5px 0 8px!important;font-size:25px!important}
+#thEmergencyLogin .sub{display:block!important;color:#64748b!important;text-align:center!important;margin-bottom:18px!important}
+#thEmergencyLogin label{display:block!important;color:#334155!important;font-weight:600!important;margin:12px 0 6px!important}
+#thEmergencyLogin input{display:block!important;width:100%!important;box-sizing:border-box!important;padding:13px!important;border:1px solid #cbd5e1!important;border-radius:9px!important;font-size:16px!important;background:#fff!important;color:#111827!important}
+#thEmergencyLogin button{display:block!important;width:100%!important;margin-top:16px!important;padding:13px!important;border:0!important;border-radius:9px!important;background:#2563eb!important;color:#fff!important;font-size:16px!important;font-weight:700!important}
+#thEmergencyLogin .hint{color:#64748b!important;font-size:12px!important;text-align:center!important;margin-top:14px!important}
+#thEmergencyLogin .msg{color:#dc2626!important;font-size:13px!important;text-align:center!important;margin-top:10px!important;min-height:16px!important}
+</style>
+<div id="thEmergencyLogin"><div class="card"><img src="trophy_house_logo.png" onerror="this.style.display='none'"><h2>Trophy House</h2><div class="sub">Real Stock Management • Secure Login</div><label for="thELUser">Username</label><input id="thELUser" autocomplete="username" placeholder="Username"><label for="thELPass">Password</label><input id="thELPass" type="password" autocomplete="current-password" placeholder="Password"><button type="button" id="thELBtn">Login</button><div id="thELMsg" class="msg"></div><div class="hint">Default Admin: admin / admin123</div></div></div>
+<script>
+(function(){
+var ov=document.getElementById('thEmergencyLogin'),u=document.getElementById('thELUser'),p=document.getElementById('thELPass'),b=document.getElementById('thELBtn'),msg=document.getElementById('thELMsg');
+var defs=[{u:'admin',n:'Administrator',p:'admin123',r:'Admin'},{u:'manager',n:'Manager',p:'manager123',r:'Manager'},{u:'billing',n:'Billing Staff',p:'billing123',r:'Billing'},{u:'store',n:'Store Staff',p:'store123',r:'Store'},{u:'production',n:'Production Staff',p:'production123',r:'Production'},{u:'labour',n:'Labour Staff',p:'labour123',r:'Labour'}];
+function users(){try{var x=JSON.parse(localStorage.getItem('th_v32_users')||'null');if(Array.isArray(x)&&x.length)return x;}catch(e){}try{localStorage.setItem('th_v32_users',JSON.stringify(defs));}catch(e){}return defs;}
+function login(){var name=(u.value||'').trim(),pass=p.value||'',found=users().find(function(x){return x.u===name&&x.p===pass;});if(!found){msg.textContent='Wrong username or password';return;}try{localStorage.setItem('th_v32_session',JSON.stringify({u:found.u,n:found.n,r:found.r}));}catch(e){}ov.style.setProperty('display','none','important');var old=document.getElementById('v32Login');if(old)old.style.setProperty('display','none','important');try{if(typeof v32Apply==='function')v32Apply();}catch(e){}}
+b.addEventListener('click',login);p.addEventListener('keydown',function(e){if(e.key==='Enter')login();});u.addEventListener('keydown',function(e){if(e.key==='Enter')p.focus();});
+})();
+</script>
+
 </body></html>`);w.document.close();
  }
  window.v34InvoiceSettings=function(){
