@@ -30,6 +30,80 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{text-align:left;p
 </style>
 </head>
 <body>
+
+<style id="TH_LOGIN_FORCE_CSS">
+#TH_LOGIN_FORCE{position:fixed!important;inset:0!important;z-index:2147483647!important;
+display:flex!important;align-items:center!important;justify-content:center!important;
+background:#0f172a!important;padding:20px!important;box-sizing:border-box!important;
+font-family:Arial,sans-serif!important}
+#TH_LOGIN_FORCE .thlf-box{width:min(420px,100%)!important;background:#fff!important;
+color:#111827!important;border-radius:18px!important;padding:28px!important;
+box-shadow:0 20px 70px rgba(0,0,0,.45)!important;box-sizing:border-box!important}
+#TH_LOGIN_FORCE *{box-sizing:border-box!important}
+#TH_LOGIN_FORCE img{display:block!important;max-width:170px!important;max-height:75px!important;
+margin:0 auto 14px!important}
+#TH_LOGIN_FORCE h2{text-align:center!important;margin:5px 0 8px!important;font-size:25px!important}
+#TH_LOGIN_FORCE .sub{text-align:center!important;color:#64748b!important;margin-bottom:18px!important}
+#TH_LOGIN_FORCE label{display:block!important;font-weight:600!important;margin:12px 0 6px!important}
+#TH_LOGIN_FORCE input{display:block!important;width:100%!important;padding:13px!important;
+border:1px solid #cbd5e1!important;border-radius:9px!important;font-size:16px!important;
+background:#fff!important;color:#111827!important}
+#TH_LOGIN_FORCE button{display:block!important;width:100%!important;margin-top:16px!important;
+padding:13px!important;border:0!important;border-radius:9px!important;background:#2563eb!important;
+color:#fff!important;font-size:16px!important;font-weight:700!important}
+#TH_LOGIN_FORCE .msg{text-align:center!important;color:#dc2626!important;font-size:13px!important;
+margin-top:10px!important;min-height:16px!important}
+#TH_LOGIN_FORCE .hint{text-align:center!important;color:#64748b!important;font-size:12px!important;margin-top:14px!important}
+#TH_LOGIN_FORCE.thlf-hide{display:none!important}
+</style>
+
+<div id="TH_LOGIN_FORCE">
+  <div class="thlf-box">
+    <img src="trophy_house_logo.png" onerror="this.style.display='none'">
+    <h2>Trophy House</h2>
+    <div class="sub">Real Stock Management • Secure Login</div>
+    <label>Username</label>
+    <input id="THLF_USER" autocomplete="username" placeholder="Username">
+    <label>Password</label>
+    <input id="THLF_PASS" type="password" autocomplete="current-password" placeholder="Password">
+    <button type="button" id="THLF_BTN">Login</button>
+    <div id="THLF_MSG" class="msg"></div>
+    <div class="hint">Default Admin: admin / admin123</div>
+  </div>
+</div>
+<script>
+(function(){
+  var ov=document.getElementById('TH_LOGIN_FORCE');
+  var u=document.getElementById('THLF_USER');
+  var p=document.getElementById('THLF_PASS');
+  var b=document.getElementById('THLF_BTN');
+  var m=document.getElementById('THLF_MSG');
+  var defs=[
+    {u:'admin',n:'Administrator',p:'admin123',r:'Admin'},
+    {u:'manager',n:'Manager',p:'manager123',r:'Manager'},
+    {u:'billing',n:'Billing Staff',p:'billing123',r:'Billing'},
+    {u:'store',n:'Store Staff',p:'store123',r:'Store'},
+    {u:'production',n:'Production Staff',p:'production123',r:'Production'},
+    {u:'labour',n:'Labour Staff',p:'labour123',r:'Labour'}
+  ];
+  function login(){
+    var name=(u.value||'').trim(), pass=p.value||'';
+    var found=defs.find(function(x){return x.u===name && x.p===pass;});
+    if(!found){m.textContent='Wrong username or password';return;}
+    try{
+      localStorage.setItem('th_v32_users',JSON.stringify(defs));
+      localStorage.setItem('th_v32_session',JSON.stringify({u:found.u,n:found.n,r:found.r}));
+    }catch(e){}
+    ov.classList.add('thlf-hide');
+    try{var old=document.getElementById('v32Login');if(old)old.classList.add('v32-hidden');}catch(e){}
+    try{if(typeof v32Apply==='function')v32Apply();}catch(e){}
+  }
+  b.addEventListener('click',login);
+  p.addEventListener('keydown',function(e){if(e.key==='Enter')login();});
+  u.addEventListener('keydown',function(e){if(e.key==='Enter')p.focus();});
+})();
+</script>
+
 <div id="v32Login"><div class="loginbox"><img src="trophy_house_logo.png"><h2>Trophy House</h2><div class="muted" style="text-align:center;margin-bottom:18px">Secure Login • V32</div><label>Username<input id="v32User" autocomplete="username" placeholder="Username"></label><label>Password<input id="v32Pass" type="password" autocomplete="current-password" placeholder="Password" onkeydown="if(event.key==='Enter')v32DoLogin()"></label><button class="primary" style="width:100%;margin-top:10px" onclick="v32DoLogin()">Login</button><div id="v32LoginMsg" class="muted" style="margin-top:10px;text-align:center"></div><div class="muted" style="margin-top:16px;font-size:12px">Default Admin: admin / admin123</div></div></div>
 
 <aside class="sidebar">
@@ -2958,44 +3032,6 @@ setTimeout(()=>{renderOrderPaymentCenter();try{renderStockAudit()}catch(e){}},10
 </script>
 
 
-<!-- REAL LOGIN PATCH: intentionally outside all app scripts -->
-<style id="TH_REAL_LOGIN_CSS">
-#TH_REAL_LOGIN{position:fixed;inset:0;z-index:2147483647;display:flex;align-items:center;justify-content:center;background:#0f172a;padding:20px;box-sizing:border-box;font-family:Arial,sans-serif}
-#TH_REAL_LOGIN *{box-sizing:border-box}
-#TH_REAL_LOGIN .box{width:min(420px,100%);background:#fff;color:#111827;border-radius:18px;padding:28px;box-shadow:0 20px 70px rgba(0,0,0,.45)}
-#TH_REAL_LOGIN img{display:block;max-width:170px;max-height:75px;margin:0 auto 14px}
-#TH_REAL_LOGIN h2{text-align:center;margin:5px 0 8px;font-size:25px}
-#TH_REAL_LOGIN .sub{text-align:center;color:#64748b;margin-bottom:18px}
-#TH_REAL_LOGIN label{display:block;font-weight:600;margin:12px 0 6px}
-#TH_REAL_LOGIN input{display:block;width:100%;padding:13px;border:1px solid #cbd5e1;border-radius:9px;font-size:16px;background:#fff;color:#111827}
-#TH_REAL_LOGIN button{display:block;width:100%;margin-top:16px;padding:13px;border:0;border-radius:9px;background:#2563eb;color:#fff;font-size:16px;font-weight:700}
-#TH_REAL_LOGIN .msg{text-align:center;color:#dc2626;font-size:13px;margin-top:10px;min-height:16px}
-#TH_REAL_LOGIN .hint{text-align:center;color:#64748b;font-size:12px;margin-top:14px}
-#TH_REAL_LOGIN.TH_HIDE{display:none!important}
-</style>
-<div id="TH_REAL_LOGIN">
- <div class="box">
-  <img src="trophy_house_logo.png" onerror="this.style.display='none'">
-  <h2>Trophy House</h2>
-  <div class="sub">Real Stock Management • Secure Login</div>
-  <label>Username</label><input id="TH_REAL_USER" autocomplete="username" placeholder="Username">
-  <label>Password</label><input id="TH_REAL_PASS" type="password" autocomplete="current-password" placeholder="Password">
-  <button type="button" id="TH_REAL_BTN">Login</button>
-  <div id="TH_REAL_MSG" class="msg"></div>
-  <div class="hint">Default Admin: admin / admin123</div>
- </div>
-</div>
-<script>
-(function(){
- var ov=document.getElementById('TH_REAL_LOGIN'),u=document.getElementById('TH_REAL_USER'),p=document.getElementById('TH_REAL_PASS'),b=document.getElementById('TH_REAL_BTN'),m=document.getElementById('TH_REAL_MSG');
- var defs=[{u:'admin',n:'Administrator',p:'admin123',r:'Admin'},{u:'manager',n:'Manager',p:'manager123',r:'Manager'},{u:'billing',n:'Billing Staff',p:'billing123',r:'Billing'},{u:'store',n:'Store Staff',p:'store123',r:'Store'},{u:'production',n:'Production Staff',p:'production123',r:'Production'},{u:'labour',n:'Labour Staff',p:'labour123',r:'Labour'}];
- function login(){var name=(u.value||'').trim(),pass=p.value||'',found=defs.find(function(x){return x.u===name&&x.p===pass;});if(!found){m.textContent='Wrong username or password';return;}try{localStorage.setItem('th_v32_users',JSON.stringify(defs));localStorage.setItem('th_v32_session',JSON.stringify({u:found.u,n:found.n,r:found.r}));}catch(e){}ov.classList.add('TH_HIDE');try{var old=document.getElementById('v32Login');if(old)old.classList.add('v32-hidden');}catch(e){}try{if(typeof v32Apply==='function')v32Apply();}catch(e){}}
- b.addEventListener('click',login);p.addEventListener('keydown',function(e){if(e.key==='Enter')login();});u.addEventListener('keydown',function(e){if(e.key==='Enter')p.focus();});
- /* Prevent any accidental script from hiding the real login before the user logs in. */
- var mo=new MutationObserver(function(){if(!ov.classList.contains('TH_HIDE')){ov.style.setProperty('display','flex','important');ov.style.setProperty('visibility','visible','important');ov.style.setProperty('opacity','1','important');}});mo.observe(ov,{attributes:true,attributeFilter:['style','class']});
- ov.style.setProperty('display','flex','important');
-})();
-</script>
 </body></html>
 <script>
 /* ===== V23 Purchase-to-Pay ===== */
