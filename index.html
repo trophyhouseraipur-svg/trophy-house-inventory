@@ -30,7 +30,44 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{text-align:left;p
 </style>
 </head>
 <body>
-<div id="v32Login"><div class="loginbox"><img src="trophy_house_logo.png"><h2>Trophy House</h2><div class="muted" style="text-align:center;margin-bottom:18px">Secure Login • V32</div><label>Username<input id="v32User" autocomplete="username" placeholder="Username"></label><label>Password<input id="v32Pass" type="password" autocomplete="current-password" placeholder="Password" onkeydown="if(event.key==='Enter')v32DoLogin()"></label><button class="primary" style="width:100%;margin-top:10px" onclick="v32DoLogin()">Login</button><div id="v32LoginMsg" class="muted" style="margin-top:10px;text-align:center"></div><div class="muted" style="margin-top:16px;font-size:12px">Default Admin: admin / admin123</div></div></div>
+<div id="v32Login" style="position:fixed;inset:0;z-index:2147483647;display:flex;align-items:center;justify-content:center;padding:20px;background:rgba(15,23,42,.97);font-family:Arial,sans-serif;">
+  <div class="loginbox" style="display:block!important;visibility:visible!important;opacity:1!important;width:min(420px,100%);background:#fff;color:#17202a;border-radius:18px;padding:28px;box-shadow:0 20px 70px rgba(0,0,0,.45);">
+    <img src="trophy_house_logo.png" style="display:block;width:auto;max-width:180px;height:auto;max-height:80px;margin:0 auto 16px" onerror="this.style.display='none'">
+    <h2 style="margin:4px 0 8px;text-align:center;color:#17202a">Trophy House</h2>
+    <div style="text-align:center;margin-bottom:18px;color:#697586">Secure Login • Inventory</div>
+    <label style="display:block;font-size:13px;color:#344054;margin-bottom:12px">Username<input id="v32User" autocomplete="username" placeholder="Username" style="display:block;width:100%;margin-top:5px;padding:12px;border:1px solid #d0d5dd;border-radius:8px;box-sizing:border-box;color:#17202a;background:#fff"></label>
+    <label style="display:block;font-size:13px;color:#344054">Password<input id="v32Pass" type="password" autocomplete="current-password" placeholder="Password" style="display:block;width:100%;margin-top:5px;padding:12px;border:1px solid #d0d5dd;border-radius:8px;box-sizing:border-box;color:#17202a;background:#fff"></label>
+    <button id="v32LoginBtn" type="button" style="display:block;width:100%;margin-top:12px;padding:12px;border:0;border-radius:8px;background:#111827;color:#fff;font-weight:700;font-size:15px;cursor:pointer">Login</button>
+    <div id="v32LoginMsg" style="margin-top:10px;text-align:center;color:#b42318;min-height:18px"></div>
+    <div style="margin-top:16px;font-size:12px;text-align:center;color:#697586">Default Admin: <b>admin</b> / <b>admin123</b></div>
+  </div>
+</div>
+<script>
+/* FINAL LOGIN RECOVERY: independent of earlier scripts */
+(function(){
+  function ready(){
+    var box=document.getElementById('v32Login'), user=document.getElementById('v32User'), pass=document.getElementById('v32Pass'), btn=document.getElementById('v32LoginBtn'), msg=document.getElementById('v32LoginMsg');
+    if(!box||!user||!pass||!btn)return;
+    box.style.setProperty('display','flex','important');
+    box.style.setProperty('visibility','visible','important');
+    box.style.setProperty('opacity','1','important');
+    function current(){try{return JSON.parse(localStorage.getItem('th_v32_session')||'null')}catch(e){return null}}
+    if(current()){box.style.setProperty('display','none','important');return;}
+    function login(){
+      var u=(user.value||'').trim(), p=pass.value||'', users;
+      try{users=JSON.parse(localStorage.getItem('th_v32_users')||'null')}catch(e){users=null}
+      if(!Array.isArray(users)||!users.length){users=[{u:'admin',n:'Administrator',p:'admin123',r:'Admin'},{u:'manager',n:'Manager',p:'manager123',r:'Manager'},{u:'billing',n:'Billing Staff',p:'billing123',r:'Billing'},{u:'store',n:'Store Staff',p:'store123',r:'Store'},{u:'production',n:'Production Staff',p:'production123',r:'Production'},{u:'labour',n:'Labour Staff',p:'labour123',r:'Labour'}];try{localStorage.setItem('th_v32_users',JSON.stringify(users))}catch(e){}}
+      var found=users.find(function(x){return x.u===u&&x.p===p});
+      if(!found){msg.textContent='Wrong username or password';return;}
+      try{localStorage.setItem('th_v32_session',JSON.stringify({u:found.u,n:found.n,r:found.r}))}catch(e){}
+      box.style.setProperty('display','none','important');
+      try{if(typeof v32Apply==='function')v32Apply()}catch(e){}
+    }
+    btn.onclick=login; pass.onkeydown=function(e){if(e.key==='Enter')login()};
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',ready);else ready();
+})();
+</script>
 
 <aside class="sidebar">
 <div class="brand"><img src="trophy_house_logo.png"><div><b>TROPHY HOUSE</b><small>Inventory V35</small></div></div>
