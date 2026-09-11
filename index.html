@@ -734,7 +734,7 @@ let data=JSON.parse(localStorage.getItem(KEY)||'null')||{
  ledger:[{date:new Date().toLocaleString(),code:'TH-001',type:'Opening',qty:125,from:'',to:'Main Godown / A / 02 / 05',balance:125}],
 invoices:[]
 };
-function save(){localStorage.setItem(KEY,JSON.stringify(data));renderAll()}
+function save(){localStorage.setItem(KEY,JSON.stringify(data));try{renderAll()}catch(e){console.error('renderAll after save:',e)}}
 if(!data.invoices)data.invoices=[]; if(!data.parties)data.parties=[];
 if(!data.retailStock)data.retailStock={};
 if(!data.purchaseReturns)data.purchaseReturns=[];
@@ -771,7 +771,7 @@ function exportData(){
 function go(id,btn){document.querySelectorAll('.view').forEach(x=>x.classList.remove('active'));document.getElementById(id).classList.add('active');document.querySelectorAll('nav button').forEach(x=>x.classList.remove('active'));btn.classList.add('active');renderAll()}
 function item(code){return data.items.find(x=>x.code.trim().toLowerCase()==code.trim().toLowerCase())}
 function movement(code,type,qty,from,to){let it=item(code);data.ledger.unshift({date:new Date().toLocaleString(),code:it.code,type,qty,from,to,balance:it.stock})}
-function addItem(){let code=icode.value.trim(), name=iname.value.trim();if(!code||!name)return alert('Item Code aur Item Name bharna zaroori hai.');if(item(code))return alert('Item code already exists.');let st=+iopen.value||0;data.items.push({code,name,barcode:ibarcode.value.trim(),cat:icat.value,unit:iunit.value,buy:+iprice.value||0,sale:+isale.value||0,min:+imin.value||0,stock:st});if(st)movement(code,'Opening',st,'','Main Godown');save();alert('Item saved.')}
+function addItem(){try{const icodeEl=document.getElementById('icode'),inameEl=document.getElementById('iname'),ibarcodeEl=document.getElementById('ibarcode'),icatEl=document.getElementById('icat'),iunitEl=document.getElementById('iunit'),ipriceEl=document.getElementById('iprice'),isaleEl=document.getElementById('isale'),iminEl=document.getElementById('imin'),iopenEl=document.getElementById('iopen');let code=(icodeEl?.value||'').trim(),name=(inameEl?.value||'').trim();if(!code||!name)return alert('Item Code aur Item Name bharna zaroori hai.');if(item(code))return alert('Item code already exists.');let st=Number(iopenEl?.value||0);const rec={code,name,barcode:(ibarcodeEl?.value||'').trim(),cat:icatEl?.value||'',unit:iunitEl?.value||'PCS',buy:Number(ipriceEl?.value||0),sale:Number(isaleEl?.value||0),min:Number(iminEl?.value||0),stock:st};data.items.push(rec);if(st)movement(code,'Opening',st,'','Main Godown');localStorage.setItem(KEY,JSON.stringify(data));try{renderAll()}catch(e){console.error('renderAll:',e)}alert('Item saved successfully: '+code+' — '+name);if(inameEl)inameEl.focus();}catch(e){console.error(e);alert('Save error: '+(e?.message||e))}}
 function addLocation(){let g=gname.value.trim(),r=grack.value.trim(),s=gshelf.value.trim(),b=gbin.value.trim();if(!g)return alert('Godown name required.');data.locations.push({g,r,s,b});save();alert('Location saved.')}
 function purchase(){
  let it=item(pcode.value),q=+pqty.value,rate=+prate.value||it?.buy||0;
@@ -1124,7 +1124,11 @@ go=function(id,btn){if(!v32Can(id)){alert('Access denied: '+(v32Current()?.r||'G
 function v32Apply(){const s=v32Current();if(!s)return;document.getElementById('v32UserBar').innerHTML='<b>'+esc(s.n)+'</b><br><span>'+esc(s.r)+'</span><br><button class="btn light" onclick="v32Logout()">Logout</button>';document.querySelectorAll('nav button[onclick*="go(\'"]').forEach(b=>{const m=b.getAttribute('onclick').match(/go\('([^']+)'/);if(m)b.style.display=v32Can(m[1])?'':'none';});const ub=document.querySelector('button[onclick*="v32users"]');if(ub)ub.style.display=s.r==='Admin'?'':'none';renderV32Users();}
 function v32AddUser(){if(v32Current()?.r!=='Admin')return alert('Only Admin can create users.');const u=(v32NewUser.value||'').trim(),n=(v32NewName.value||u).trim(),p=v32NewPass.value||'',r=v32NewRole.value;if(!u||!p)return alert('Username aur password required.');let us=v32Users();if(us.some(x=>x.u===u))return alert('Username already exists.');us.push({u,n,p,r});localStorage.setItem(V32_USERS_KEY,JSON.stringify(us));v32NewUser.value=v32NewName.value=v32NewPass.value='';renderV32Users();alert('User created.');}
 function v32DeleteUser(u){if(v32Current()?.r!=='Admin')return;if(u==='admin')return alert('Default admin cannot be deleted.');if(!confirm('Delete user '+u+'?'))return;let us=v32Users().filter(x=>x.u!==u);localStorage.setItem(V32_USERS_KEY,JSON.stringify(us));renderV32Users();}
-function renderV32Users(){const b=document.getElementById('v32UserRows');if(!b)return;b.innerHTML=v32Users().map(x=>'<tr><td>'+esc(x.u)+'</td><td>'+esc(x.n)+'</td><td>'+esc(x.r)+'</td><td>'+(x.u==='admin'?'-':'<button class="btn light" onclick="v32DeleteUser(\\''+esc(x.u)+'\\')">Delete</button>')+'</td></tr>').join('');}
+function renderV32Users(){
+ const b=document.getElementById('v32UserRows');
+ if(!b)return;
+ b.innerHTML=v32Users().map(x=>`<tr><td>${esc(x.u)}</td><td>${esc(x.n)}</td><td>${esc(x.r)}</td><td>${x.u==='admin'?'—':`<button class="btn light" onclick="v32DeleteUser('${esc(x.u)}')">Delete</button>`}</td></tr>`).join('');
+}
 (function(){v32Users();const s=v32Current();if(!s){document.getElementById('v32Login').classList.remove('v32-hidden');}else{document.getElementById('v32Login').classList.add('v32-hidden');v32Apply();}})();
 </script><script>renderProductionCart();renderProduction();</script><script>
 /* ===== V13 Labour / Salary ===== */
@@ -2934,63 +2938,6 @@ setTimeout(()=>{renderOrderPaymentCenter();try{renderStockAudit()}catch(e){}},10
 })();
 </script>
 
-
-<!-- TROPHY HOUSE EMERGENCY UI/NAVIGATION FIX -->
-<script>
-(function(){
-  // Keep the app usable even if an older feature script has a syntax error.
-  try { window.data = window.data || JSON.parse(localStorage.getItem('th_v2_data') || '{}'); } catch(e) { window.data = window.data || {}; }
-  function showView(id, btn){
-    var target=document.getElementById(id); if(!target)return false;
-    document.querySelectorAll('.view').forEach(function(v){v.classList.remove('active');});
-    target.classList.add('active');
-    document.querySelectorAll('nav button').forEach(function(b){b.classList.remove('active');});
-    if(btn) btn.classList.add('active');
-    try{ if(typeof window.renderAll==='function') window.renderAll(); }catch(e){}
-    try{ if(typeof window.renderDashboard==='function' && id==='dashboard') window.renderDashboard(); }catch(e){}
-    return false;
-  }
-  window.go=function(id,btn){ return showView(id,btn); };
-
-  // Repair navigation buttons from their existing onclick="go('view',this)" attributes.
-  function wireNav(){
-    document.querySelectorAll('nav button').forEach(function(btn){
-      var oc=btn.getAttribute('onclick')||'';
-      var m=oc.match(/go\(['"]([^'"]+)['"]/);
-      if(!m)return;
-      var id=m[1];
-      btn.onclick=function(ev){ if(ev)ev.preventDefault(); ev&&ev.stopPropagation(); return showView(id,btn); };
-    });
-  }
-  wireNav();
-
-  // Ensure V32 login remains functional even when the old auth block failed to parse.
-  var KEY='th_v32_users', SESSION='th_v32_session';
-  var defaults=[{u:'admin',n:'Administrator',p:'admin123',r:'Admin'}];
-  function users(){
-    try{var x=JSON.parse(localStorage.getItem(KEY)||'null');if(Array.isArray(x)&&x.length)return x;}catch(e){}
-    localStorage.setItem(KEY,JSON.stringify(defaults)); return defaults;
-  }
-  window.v32DoLogin=function(){
-    var u=(document.getElementById('v32User')||{}).value||'', p=(document.getElementById('v32Pass')||{}).value||'';
-    var f=users().find(function(x){return x.u===u.trim()&&x.p===p;});
-    if(!f){var msg=document.getElementById('v32LoginMsg');if(msg)msg.textContent='Wrong username or password';return;}
-    localStorage.setItem(SESSION,JSON.stringify({u:f.u,n:f.n,r:f.r}));
-    var box=document.getElementById('v32Login');if(box)box.classList.add('v32-hidden');
-    var ub=document.getElementById('v32UserBar');if(ub)ub.innerHTML='<b>'+String(f.n)+'</b><br><span>'+String(f.r)+'</span><br><button class="btn light" onclick="v32Logout()">Logout</button>';
-    wireNav();
-  };
-  window.v32Logout=function(){localStorage.removeItem(SESSION);location.reload();};
-  function auth(){
-    var box=document.getElementById('v32Login'); if(!box)return;
-    var sess=null;try{sess=JSON.parse(localStorage.getItem(SESSION)||'null')}catch(e){}
-    if(sess){box.classList.add('v32-hidden');var ub=document.getElementById('v32UserBar');if(ub)ub.innerHTML='<b>'+String(sess.n||sess.u)+'</b><br><span>'+String(sess.r||'Admin')+'</span><br><button class="btn light" onclick="v32Logout()">Logout</button>';}
-    else box.classList.remove('v32-hidden');
-  }
-  auth();
-  setTimeout(wireNav,100);
-})();
-</script>
 </body></html>
 <script>
 /* ===== V23 Purchase-to-Pay ===== */
