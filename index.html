@@ -26,8 +26,16 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{text-align:left;p
 .barcode-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.barcode-label{border:1px dashed #777;padding:10px;text-align:center;min-height:105px;box-sizing:border-box;background:#fff}.barcode-label .bn{font-weight:700;font-size:14px}.barcode-label .bc{font-size:12px;letter-spacing:1px}.barcode-label canvas{max-width:100%;height:42px}.print-sheet{background:#f5f5f5}.barcode-actions{display:flex;gap:8px;flex-wrap:wrap}.barcode-note{font-size:12px;color:#666}@media print{body.print-labels *{visibility:hidden!important}body.print-labels #barcodePrintArea,body.print-labels #barcodePrintArea *{visibility:visible!important}body.print-labels #barcodePrintArea{position:absolute;left:0;top:0;width:100%}.print-sheet{background:#fff}.barcode-grid{grid-template-columns:repeat(3,1fr);gap:6mm}.barcode-label{break-inside:avoid;border:1px solid #333;min-height:32mm;padding:3mm}.barcode-label canvas{height:12mm!important}}
 
 /* V32 Login & Permissions */
-#v32Login{position:fixed;inset:0;background:rgba(15,23,42,.96);z-index:99999;display:flex;align-items:center;justify-content:center;padding:20px}#v32Login .loginbox{width:min(420px,100%);background:#fff;border-radius:18px;padding:28px;box-shadow:0 20px 70px rgba(0,0,0,.35)}#v32Login img{display:block;max-width:180px;max-height:80px;margin:0 auto 16px}#v32Login h2{margin:4px 0 8px;text-align:center}.v32-userbar{margin:8px 12px;padding:10px;border:1px solid #334155;border-radius:10px;color:#e2e8f0;font-size:13px}.v32-userbar button{margin-top:7px;width:100%}.v32-hidden{display:none!important}
-</style>
+#v32Login{position:fixed;inset:0;background:rgba(15,23,42,.98);z-index:2147483000;display:flex;align-items:center;justify-content:center;padding:18px;overflow:auto}
+#v32Login.v32-hidden{display:none!important;visibility:hidden!important;pointer-events:none!important}
+#v32Login .loginbox{width:min(460px,100%);background:#fff;border-radius:18px;padding:26px 24px;box-shadow:0 20px 70px rgba(0,0,0,.35);color:#17202a}
+#v32Login img{display:block;width:auto;max-width:150px;height:auto;max-height:90px;margin:0 auto 14px}
+#v32Login h2{margin:4px 0 8px;text-align:center;font-size:28px}
+#v32Login label{display:block!important;width:100%!important;margin:12px 0 6px!important;color:#17202a!important;font-weight:600}
+#v32Login input{display:block!important;width:100%!important;height:48px!important;margin:6px 0 0!important;padding:10px 12px!important;border:1px solid #cbd5e1!important;border-radius:10px!important;background:#fff!important;color:#17202a!important;font-size:16px!important;box-sizing:border-box!important}
+#v32Login button{display:block;width:100%;min-height:48px;border:0;border-radius:10px;background:#111827;color:#fff;font-size:16px;cursor:pointer}
+#v32Login .muted{color:#64748b}
+.v32-userbar{margin:8px 12px;padding:10px;border:1px solid #334155;border-radius:10px;color:#e2e8f0;font-size:13px}.v32-userbar button{margin-top:7px;width:100%}.v32-hidden{display:none!important} </style>
 </head>
 <body>
 <div id="v32Login"><div class="loginbox"><img src="trophy_house_logo.png"><h2>Trophy House</h2><div class="muted" style="text-align:center;margin-bottom:18px">Secure Login • V32</div><label>Username<input id="v32User" autocomplete="username" placeholder="Username"></label><label>Password<input id="v32Pass" type="password" autocomplete="current-password" placeholder="Password" onkeydown="if(event.key==='Enter')v32DoLogin()"></label><button class="primary" style="width:100%;margin-top:10px" onclick="v32DoLogin()">Login</button><div id="v32LoginMsg" class="muted" style="margin-top:10px;text-align:center"></div><div class="muted" style="margin-top:16px;font-size:12px">Default Admin: admin / admin123</div></div></div>
@@ -734,7 +742,7 @@ let data=JSON.parse(localStorage.getItem(KEY)||'null')||{
  ledger:[{date:new Date().toLocaleString(),code:'TH-001',type:'Opening',qty:125,from:'',to:'Main Godown / A / 02 / 05',balance:125}],
 invoices:[]
 };
-function save(){localStorage.setItem(KEY,JSON.stringify(data));try{renderAll()}catch(e){console.error('renderAll after save:',e)}}
+function save(){localStorage.setItem(KEY,JSON.stringify(data));renderAll()}
 if(!data.invoices)data.invoices=[]; if(!data.parties)data.parties=[];
 if(!data.retailStock)data.retailStock={};
 if(!data.purchaseReturns)data.purchaseReturns=[];
@@ -771,7 +779,7 @@ function exportData(){
 function go(id,btn){document.querySelectorAll('.view').forEach(x=>x.classList.remove('active'));document.getElementById(id).classList.add('active');document.querySelectorAll('nav button').forEach(x=>x.classList.remove('active'));btn.classList.add('active');renderAll()}
 function item(code){return data.items.find(x=>x.code.trim().toLowerCase()==code.trim().toLowerCase())}
 function movement(code,type,qty,from,to){let it=item(code);data.ledger.unshift({date:new Date().toLocaleString(),code:it.code,type,qty,from,to,balance:it.stock})}
-function addItem(){try{const icodeEl=document.getElementById('icode'),inameEl=document.getElementById('iname'),ibarcodeEl=document.getElementById('ibarcode'),icatEl=document.getElementById('icat'),iunitEl=document.getElementById('iunit'),ipriceEl=document.getElementById('iprice'),isaleEl=document.getElementById('isale'),iminEl=document.getElementById('imin'),iopenEl=document.getElementById('iopen');let code=(icodeEl?.value||'').trim(),name=(inameEl?.value||'').trim();if(!code||!name)return alert('Item Code aur Item Name bharna zaroori hai.');if(item(code))return alert('Item code already exists.');let st=Number(iopenEl?.value||0);const rec={code,name,barcode:(ibarcodeEl?.value||'').trim(),cat:icatEl?.value||'',unit:iunitEl?.value||'PCS',buy:Number(ipriceEl?.value||0),sale:Number(isaleEl?.value||0),min:Number(iminEl?.value||0),stock:st};data.items.push(rec);if(st)movement(code,'Opening',st,'','Main Godown');localStorage.setItem(KEY,JSON.stringify(data));try{renderAll()}catch(e){console.error('renderAll:',e)}alert('Item saved successfully: '+code+' — '+name);if(inameEl)inameEl.focus();}catch(e){console.error(e);alert('Save error: '+(e?.message||e))}}
+function addItem(){let code=icode.value.trim(), name=iname.value.trim();if(!code||!name)return alert('Item Code aur Item Name bharna zaroori hai.');if(item(code))return alert('Item code already exists.');let st=+iopen.value||0;data.items.push({code,name,barcode:ibarcode.value.trim(),cat:icat.value,unit:iunit.value,buy:+iprice.value||0,sale:+isale.value||0,min:+imin.value||0,stock:st});if(st)movement(code,'Opening',st,'','Main Godown');save();alert('Item saved.')}
 function addLocation(){let g=gname.value.trim(),r=grack.value.trim(),s=gshelf.value.trim(),b=gbin.value.trim();if(!g)return alert('Godown name required.');data.locations.push({g,r,s,b});save();alert('Location saved.')}
 function purchase(){
  let it=item(pcode.value),q=+pqty.value,rate=+prate.value||it?.buy||0;
@@ -1116,7 +1124,7 @@ const V32_ACCESS={
 };
 function v32Users(){let x;try{x=JSON.parse(localStorage.getItem(V32_USERS_KEY)||'null')}catch(e){} if(!Array.isArray(x)||!x.length){x=V32_DEFAULTS;localStorage.setItem(V32_USERS_KEY,JSON.stringify(x));}return x;}
 function v32Current(){try{return JSON.parse(localStorage.getItem(V32_SESSION_KEY)||'null')}catch(e){return null}}
-function v32DoLogin(){const u=(document.getElementById('v32User').value||'').trim(),p=document.getElementById('v32Pass').value||'',found=v32Users().find(x=>x.u===u&&x.p===p);if(!found){document.getElementById('v32LoginMsg').textContent='Wrong username or password';return;}localStorage.setItem(V32_SESSION_KEY,JSON.stringify({u:found.u,n:found.n,r:found.r}));document.getElementById('v32Login').classList.add('v32-hidden');v32Apply();}
+function v32DoLogin(){const u=(document.getElementById('v32User').value||'').trim(),p=document.getElementById('v32Pass').value||'',found=v32Users().find(x=>x.u===u&&x.p===p);if(!found){document.getElementById('v32LoginMsg').textContent='Wrong username or password';return;}localStorage.setItem(V32_SESSION_KEY,JSON.stringify({u:found.u,n:found.n,r:found.r}));document.getElementById('v32Login').classList.add('v32-hidden');document.getElementById('v32Login').style.display='none';document.getElementById('v32Login').style.visibility='hidden';document.getElementById('v32Login').style.pointerEvents='none';var stuck=document.getElementById('th37Modal');if(stuck)stuck.style.display='none';v32Apply();}
 function v32Logout(){localStorage.removeItem(V32_SESSION_KEY);location.reload();}
 function v32Can(id){const s=v32Current();if(!s)return false;const a=V32_ACCESS[s.r]||[];return a.includes('*')||a.includes(id)||id==='v32users'&&s.r==='Admin';}
 const _goV32=go;
@@ -1124,13 +1132,9 @@ go=function(id,btn){if(!v32Can(id)){alert('Access denied: '+(v32Current()?.r||'G
 function v32Apply(){const s=v32Current();if(!s)return;document.getElementById('v32UserBar').innerHTML='<b>'+esc(s.n)+'</b><br><span>'+esc(s.r)+'</span><br><button class="btn light" onclick="v32Logout()">Logout</button>';document.querySelectorAll('nav button[onclick*="go(\'"]').forEach(b=>{const m=b.getAttribute('onclick').match(/go\('([^']+)'/);if(m)b.style.display=v32Can(m[1])?'':'none';});const ub=document.querySelector('button[onclick*="v32users"]');if(ub)ub.style.display=s.r==='Admin'?'':'none';renderV32Users();}
 function v32AddUser(){if(v32Current()?.r!=='Admin')return alert('Only Admin can create users.');const u=(v32NewUser.value||'').trim(),n=(v32NewName.value||u).trim(),p=v32NewPass.value||'',r=v32NewRole.value;if(!u||!p)return alert('Username aur password required.');let us=v32Users();if(us.some(x=>x.u===u))return alert('Username already exists.');us.push({u,n,p,r});localStorage.setItem(V32_USERS_KEY,JSON.stringify(us));v32NewUser.value=v32NewName.value=v32NewPass.value='';renderV32Users();alert('User created.');}
 function v32DeleteUser(u){if(v32Current()?.r!=='Admin')return;if(u==='admin')return alert('Default admin cannot be deleted.');if(!confirm('Delete user '+u+'?'))return;let us=v32Users().filter(x=>x.u!==u);localStorage.setItem(V32_USERS_KEY,JSON.stringify(us));renderV32Users();}
-function renderV32Users(){
- const b=document.getElementById('v32UserRows');
- if(!b)return;
- b.innerHTML=v32Users().map(x=>`<tr><td>${esc(x.u)}</td><td>${esc(x.n)}</td><td>${esc(x.r)}</td><td>${x.u==='admin'?'—':`<button class="btn light" onclick="v32DeleteUser('${esc(x.u)}')">Delete</button>`}</td></tr>`).join('');
-}
-(function(){v32Users();const s=v32Current();if(!s){document.getElementById('v32Login').classList.remove('v32-hidden');}else{document.getElementById('v32Login').classList.add('v32-hidden');v32Apply();}})();
-</script><script>renderProductionCart();renderProduction();</script><script>
+function renderV32Users(){const b=document.getElementById('v32UserRows');if(!b)return;b.innerHTML=v32Users().map(x=>'<tr><td>'+esc(x.u)+'</td><td>'+esc(x.n)+'</td><td>'+esc(x.r)+'</td><td>'+(x.u==='admin'?'-':'<button class="btn light" onclick="v32DeleteUser(\\''+esc(x.u)+'\\')">Delete</button>')+'</td></tr>').join('');}
+(function(){v32Users();const s=v32Current();if(!s){document.getElementById('v32Login').classList.remove('v32-hidden');}else{document.getElementById('v32Login').classList.add('v32-hidden');document.getElementById('v32Login').style.display='none';document.getElementById('v32Login').style.visibility='hidden';document.getElementById('v32Login').style.pointerEvents='none';var stuck=document.getElementById('th37Modal');if(stuck)stuck.style.display='none';v32Apply();}})();
+</script><script>(function(){try{var e=document.getElementById('v32Login'),s=localStorage.getItem('th_v32_session');if(e&&s){e.classList.add('v32-hidden');e.style.display='none';e.style.visibility='hidden';e.style.pointerEvents='none';}else if(e){e.classList.remove('v32-hidden');e.style.display='flex';e.style.visibility='visible';e.style.pointerEvents='auto';}}catch(x){}})();</script><script>renderProductionCart();renderProduction();</script><script>
 /* ===== V13 Labour / Salary ===== */
 if(!data.workers) data.workers=[];
 if(!data.attendance) data.attendance=[];
