@@ -52,7 +52,7 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{text-align:left;p
     box.style.setProperty('visibility','visible','important');
     box.style.setProperty('opacity','1','important');
     function current(){try{return JSON.parse(localStorage.getItem('th_v32_session')||'null')}catch(e){return null}}
-    if(current()){box.style.setProperty('display','none','important');return;}
+    if(current()){box.style.setProperty('display','none','important');box.style.parentElement.style.setProperty('display','none','important');return;}
     function login(){
       var u=(user.value||'').trim(), p=pass.value||'', users;
       try{users=JSON.parse(localStorage.getItem('th_v32_users')||'null')}catch(e){users=null}
@@ -88,7 +88,14 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{text-align:left;p
 <button onclick="go('adjust',this)">± <span>Adjustment / Damage</span></button>
 <button onclick="go('parties',this)">♙ <span>Customers / Suppliers</span></button>
 <button onclick="go('ledger',this)">◫ <span>Stock Ledger</span></button>
-<button onclick="go('partyLedger',this)">₹ <span>Party Ledger<button onclick="go('labour')">👷 Labour / Salary<button onclick="go('jobcosting')">📋 Job Costing / Profit<button onclick="go('orders')">🧾 Sales Orders<button onclick="go('workflow')">🏭 Order Workflow / QC<button onclick="go('workorders')">🛠️ Production Work Orders</button></button></button><button onclick="go('delivery')">🚚 Delivery / Dispatch</button></button></button></span><button onclick="go('manufacturing')">🏭 Manufacturing / Production</button></button>
+<button onclick="go('partyLedger',this)">₹ <span>Party Ledger</span></button>
+<button onclick="go('labour',this)">👷 <span>Labour / Salary</span></button>
+<button onclick="go('jobcosting',this)">📋 <span>Job Costing / Profit</span></button>
+<button onclick="go('orders',this)">🧾 <span>Sales Orders</span></button>
+<button onclick="go('workflow',this)">🏭 <span>Order Workflow / QC</span></button>
+<button onclick="go('workorders',this)">🛠️ <span>Production Work Orders</span></button>
+<button onclick="go('delivery',this)">🚚 <span>Delivery / Dispatch</span></button>
+<button onclick="go('manufacturing',this)">🏭 <span>Manufacturing / Production</span></button>
 <button onclick="go('orderpay',this)">💳 <span>Order Payments</span></button>
 <button onclick="go('stockaudit',this)">🔍 <span>Stock Audit</span></button>
 <button onclick="go('reports',this)">▥ <span>Reports</span></button>
@@ -805,7 +812,7 @@ function exportData(){
  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='trophy-house-backup.json';a.click();URL.revokeObjectURL(a.href);
 }
 
-function go(id,btn){document.querySelectorAll('.view').forEach(x=>x.classList.remove('active'));document.getElementById(id).classList.add('active');document.querySelectorAll('nav button').forEach(x=>x.classList.remove('active'));btn.classList.add('active');renderAll()}
+function go(id,btn){var target=document.getElementById(id);if(!target){alert('Module not available: '+id);return;}document.querySelectorAll('.view').forEach(function(x){x.classList.remove('active')});target.classList.add('active');document.querySelectorAll('nav button').forEach(function(x){x.classList.remove('active')});if(btn&&btn.classList)btn.classList.add('active');try{renderAll()}catch(e){console.error(e)}}
 function item(code){return data.items.find(x=>x.code.trim().toLowerCase()==code.trim().toLowerCase())}
 function movement(code,type,qty,from,to){let it=item(code);data.ledger.unshift({date:new Date().toLocaleString(),code:it.code,type,qty,from,to,balance:it.stock})}
 function addItem(){let code=icode.value.trim(), name=iname.value.trim();if(!code||!name)return alert('Item Code aur Item Name bharna zaroori hai.');if(item(code))return alert('Item code already exists.');let st=+iopen.value||0;data.items.push({code,name,barcode:ibarcode.value.trim(),cat:icat.value,unit:iunit.value,buy:+iprice.value||0,sale:+isale.value||0,min:+imin.value||0,stock:st});if(st)movement(code,'Opening',st,'','Main Godown');save();alert('Item saved.')}
@@ -1161,7 +1168,7 @@ function v32Apply(){const s=v32Current();if(!s)return;document.getElementById('v
 function v32AddUser(){if(v32Current()?.r!=='Admin')return alert('Only Admin can create users.');const u=(v32NewUser.value||'').trim(),n=(v32NewName.value||u).trim(),p=v32NewPass.value||'',r=v32NewRole.value;if(!u||!p)return alert('Username aur password required.');let us=v32Users();if(us.some(x=>x.u===u))return alert('Username already exists.');us.push({u,n,p,r});localStorage.setItem(V32_USERS_KEY,JSON.stringify(us));v32NewUser.value=v32NewName.value=v32NewPass.value='';renderV32Users();alert('User created.');}
 function v32DeleteUser(u){if(v32Current()?.r!=='Admin')return;if(u==='admin')return alert('Default admin cannot be deleted.');if(!confirm('Delete user '+u+'?'))return;let us=v32Users().filter(x=>x.u!==u);localStorage.setItem(V32_USERS_KEY,JSON.stringify(us));renderV32Users();}
 function renderV32Users(){const b=document.getElementById('v32UserRows');if(!b)return;b.innerHTML=v32Users().map(x=>'<tr><td>'+esc(x.u)+'</td><td>'+esc(x.n)+'</td><td>'+esc(x.r)+'</td><td>'+(x.u==='admin'?'-':'<button class="btn light" onclick="v32DeleteUser(\\''+esc(x.u)+'\\')">Delete</button>')+'</td></tr>').join('');}
-(function(){v32Users();const s=v32Current();if(!s){document.getElementById('v32Login').classList.remove('v32-hidden');}else{document.getElementById('v32Login').classList.add('v32-hidden');v32Apply();}})();
+(function(){v32Users();const s=v32Current();if(!s){document.getElementById('v32Login').classList.remove('v32-hidden');document.getElementById('v32Login').style.setProperty('display','flex','important');}else{document.getElementById('v32Login').classList.add('v32-hidden');document.getElementById('v32Login').style.setProperty('display','none','important');v32Apply();}})();
 </script><script>renderProductionCart();renderProduction();</script><script>
 /* ===== V13 Labour / Salary ===== */
 if(!data.workers) data.workers=[];
